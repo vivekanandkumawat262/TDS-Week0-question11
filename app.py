@@ -29,26 +29,25 @@ NEGATIVE = {
 def root():
     return {"status": "ok"}
 
+from textblob import TextBlob
+
 @app.post("/sentiment")
 def sentiment(req: SentimentRequest):
     results = []
 
     for sentence in req.sentences:
-        text = sentence.lower()
+        polarity = TextBlob(sentence).sentiment.polarity
 
-        pos = sum(word in text for word in POSITIVE)
-        neg = sum(word in text for word in NEGATIVE)
-
-        if pos > neg:
-            label = "happy"
-        elif neg > pos:
-            label = "sad"
+        if polarity > 0.1:
+            sentiment = "happy"
+        elif polarity < -0.1:
+            sentiment = "sad"
         else:
-            label = "neutral"
+            sentiment = "neutral"
 
         results.append({
             "sentence": sentence,
-            "sentiment": label
+            "sentiment": sentiment
         })
 
     return {"results": results}
